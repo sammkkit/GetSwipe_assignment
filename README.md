@@ -71,7 +71,7 @@ The project follows the standard modular structure of Clean Architecture:
 
 1.  **Clone the Repository**:
     ```bash
-    git clone [https://github.com/sammkkit/GetSwipe_assignment.git](https://github.com/sammkkit/GetSwipe_assignment.git)
+    git clone https://github.com/sammkkit/GetSwipe_assignment.git
     cd GetSwipe_assignment
     ```
 2.  **Open in Android Studio**:
