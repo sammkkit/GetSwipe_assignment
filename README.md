@@ -27,7 +27,7 @@ The project follows the standard modular structure of Clean Architecture:
 | :--- | :--- |
 | `presentation/` | Contains the UI layers (**Compose Screens**) and their corresponding **ViewModels**. |
 | `data/` | Houses the data sources: **local** (`Room`), **remote** (`Retrofit`), **mappers**, and **repository implementation**. |
-| `domain/` | Defines the business logic: **domain models**, **use cases** (optional, but good practice), and **repository interfaces**. |
+| `domain/` | Defines the business logic: **domain models**, **use cases** , and **repository interfaces**. |
 | `core/` | Contains cross-cutting concerns like utility classes (`util/`), constants, and resource handling. |
 
 ---
@@ -42,10 +42,9 @@ The project follows the standard modular structure of Clean Architecture:
 | **Networking** | **Retrofit** + **OkHttp** | For REST API communication. |
 | **Persistence** | **Room Persistence Library** | For local data caching and offline support. |
 | **Concurrency** | **Kotlin Coroutines** | For non-blocking, asynchronous operations (e.g., API calls, DB transactions). |
-| **Dependency Injection** | **Hilt** | For robust and scalable dependency management. |
+| **Dependency Injection** | **Koin** | For robust and scalable dependency management. |
 | **State Management** | **StateFlow** | Used in **ViewModels** to expose reactive data streams to the UI. |
 | **Image Handling** | **Activity Result API** | Used with `rememberLauncherForActivityResult` for image picking. |
-| **Preferences** | **DataStore** | (If used) For key-value pair storage. |
 
 ---
 
@@ -62,6 +61,11 @@ The project follows the standard modular structure of Clean Architecture:
 * **State Management**: A generic `UiState<T>` class is used across the presentation layer to clearly manage and reflect **Loading**, **Success**, and **Error** states in the UI.
 
 ---
+
+## 📸 Screenshots
+
+![Home Screen](./images/home.png)
+![Add Product](./images/addproduct.png)
 
 ## 🧑‍💻 How to Run
 
