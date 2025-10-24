@@ -60,7 +60,6 @@ fun AddProductScreen(
     val context = LocalContext.current
     val currentState = uiState
     var showImage by remember { mutableStateOf(false) }
-    var sizeImage by remember { mutableStateOf("500") }
     var urisImages by remember { mutableStateOf<List<Uri>>(emptyList()) }
     val imagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents(),
@@ -224,7 +223,8 @@ fun AddProductScreen(
                         showImage = !showImage
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    enabled = formState.images.isNotEmpty()
                 ) {
                     Text("Edit Image")
                 }
@@ -241,6 +241,9 @@ fun AddProductScreen(
                 if (showImage) {
                     AlertDialog(
                         onDismissRequest = { showImage = false },
+                        modifier = Modifier
+                            .background(Color(0xFFABD4EE))
+                            .padding(20.dp)
                     ) {
                         SimpleCropper(
                             imageUri = urisImages[0],
@@ -275,108 +278,131 @@ fun SimpleCropper(
     var dragOffsetX by remember { mutableStateOf(0f) }
     var dragOffsetY by remember { mutableStateOf(0f) }
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(1f)
-            .background(Color.Black)
-            .onSizeChanged { viewSize = it }
-    ) {
-        SubcomposeAsyncImage(
-            model = imageUri,
-            contentDescription = null,
-            modifier = Modifier.matchParentSize(),
-            contentScale = ContentScale.Fit
-        )
-        Canvas(
+    Column {
+        Box(
             modifier = Modifier
-                .matchParentSize()
-                .pointerInput(Unit) {
-                    detectDragGestures(
-                        onDragStart = { offset ->
-                            dragOffsetX = offset.x - boxLeft
-                            dragOffsetY = offset.y - boxTop
-                        },
-                        onDrag = { change, _ ->
-                            val newLeft = (change.position.x - dragOffsetX)
-                                .coerceIn(0f, viewSize.width - boxWidth)
-                            val newTop = (change.position.y - dragOffsetY)
-                                .coerceIn(0f, viewSize.height - boxHeight)
-                            boxLeft = newLeft
-                            boxTop = newTop
-                        }
-                    )
-                }
+                .fillMaxWidth()
+                .aspectRatio(1f)
+                .background(Color.Black)
+                .onSizeChanged { viewSize = it }
         ) {
-            val viewWidth = size.width
-            val viewHeight = size.height
-            drawRect(Color(0, 0, 0, 120), size = Size(viewWidth, boxTop)) // Top
-            drawRect(Color(0, 0, 0, 120), topLeft = Offset(0f, boxTop + boxHeight), size = Size(viewWidth, viewHeight - (boxTop + boxHeight))) // Bottom
-            drawRect(Color(0, 0, 0, 120), topLeft = Offset(0f, boxTop), size = Size(boxLeft, boxHeight)) // Left
-            drawRect(Color(0, 0, 0, 120), topLeft = Offset(boxLeft + boxWidth, boxTop), size = Size(viewWidth - (boxLeft + boxWidth), boxHeight)) // Right
-            drawRect(
-                color = Color.White,
-                topLeft = Offset(boxLeft, boxTop),
-                size = Size(boxWidth, boxHeight),
-                style = Stroke(width = 2.dp.toPx())
+            SubcomposeAsyncImage(
+                model = imageUri,
+                contentDescription = null,
+                modifier = Modifier.matchParentSize(),
+                contentScale = ContentScale.Fit
+            )
+            Canvas(
+                modifier = Modifier
+                    .matchParentSize()
+                    .pointerInput(Unit) {
+                        detectDragGestures(
+                            onDragStart = { offset ->
+                                dragOffsetX = offset.x - boxLeft
+                                dragOffsetY = offset.y - boxTop
+                            },
+                            onDrag = { change, _ ->
+                                val newLeft = (change.position.x - dragOffsetX)
+                                    .coerceIn(0f, viewSize.width - boxWidth)
+                                val newTop = (change.position.y - dragOffsetY)
+                                    .coerceIn(0f, viewSize.height - boxHeight)
+                                boxLeft = newLeft
+                                boxTop = newTop
+                            }
+                        )
+                    }
+            ) {
+                val viewWidth = size.width
+                val viewHeight = size.height
+                drawRect(Color(0, 0, 0, 120), size = Size(viewWidth, boxTop)) // Top
+                drawRect(
+                    Color(0, 0, 0, 120),
+                    topLeft = Offset(0f, boxTop + boxHeight),
+                    size = Size(viewWidth, viewHeight - (boxTop + boxHeight))
+                ) // Bottom
+                drawRect(
+                    Color(0, 0, 0, 120),
+                    topLeft = Offset(0f, boxTop),
+                    size = Size(boxLeft, boxHeight)
+                ) // Left
+                drawRect(
+                    Color(0, 0, 0, 120),
+                    topLeft = Offset(boxLeft + boxWidth, boxTop),
+                    size = Size(viewWidth - (boxLeft + boxWidth), boxHeight)
+                ) // Right
+                drawRect(
+                    color = Color.White,
+                    topLeft = Offset(boxLeft, boxTop),
+                    size = Size(boxWidth, boxHeight),
+                    style = Stroke(width = 2.dp.toPx())
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .offset {
+                        IntOffset(
+                            (boxLeft + boxWidth - 15.dp.toPx()).roundToInt(),
+                            (boxTop + boxHeight - 15.dp.toPx()).roundToInt()
+                        )
+                    }
+                    .size(30.dp)
+                    .background(Color.White, shape = CircleShape)
+                    .pointerInput(Unit) {
+                        detectDragGestures { change, dragAmount ->
+                            change.consume()
+                            val (dragX, dragY) = dragAmount
+                            val newWidth = (boxWidth + dragX).coerceIn(
+                                minBoxSize,
+                                viewSize.width.toFloat() - boxLeft
+                            )
+                            val newHeight = (boxHeight + dragY).coerceIn(
+                                minBoxSize,
+                                viewSize.height.toFloat() - boxTop
+                            )
+                            boxWidth = newWidth
+                            boxHeight = newHeight
+                        }
+                    }
             )
         }
 
-        Box(
-            modifier = Modifier
-                .offset {
-                    IntOffset(
-                        (boxLeft + boxWidth - 15.dp.toPx()).roundToInt(),
-                        (boxTop + boxHeight - 15.dp.toPx()).roundToInt()
-                    )
-                }
-                .size(30.dp)
-                .background(Color.White, shape = CircleShape)
-                .pointerInput(Unit) {
-                    detectDragGestures { change, dragAmount ->
-                        change.consume()
-                        val (dragX, dragY) = dragAmount
-                        val newWidth = (boxWidth + dragX).coerceIn(
-                            minBoxSize,
-                            viewSize.width.toFloat() - boxLeft
-                        )
-                        val newHeight = (boxHeight + dragY).coerceIn(
-                            minBoxSize,
-                            viewSize.height.toFloat() - boxTop
-                        )
-                        boxWidth = newWidth
-                        boxHeight = newHeight
-                    }
-                }
-        )
-    }
+        Spacer(Modifier.height(12.dp))
 
-    Spacer(Modifier.height(12.dp))
-
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Button(onClick = onCancel, modifier = Modifier.weight(1f)) {
-            Text("Cancel")
-        }
-        Button(
-            onClick = {
-                if (viewSize.width == 0) return@Button
-                val file = cropImageFromBox(
-                    context,
-                    imageUri,
-                    boxLeft,
-                    boxTop,
-                    boxWidth,
-                    boxHeight,
-                    viewSize.width
-                )
-                onCrop(file)
-            },
-            modifier = Modifier.weight(1f)
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Crop")
+            Button(onClick = onCancel,
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Black,
+                    contentColor = Color.White
+                )) {
+                Text("Cancel")
+            }
+            Button(
+                onClick = {
+                    if (viewSize.width == 0) return@Button
+                    val file = cropImageFromBox(
+                        context,
+                        imageUri,
+                        boxLeft,
+                        boxTop,
+                        boxWidth,
+                        boxHeight,
+                        viewSize.width
+                    )
+                    onCrop(file)
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Black,
+                    contentColor = Color.White
+                ),
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Crop")
+            }
         }
     }
 }
