@@ -2,6 +2,7 @@ package com.samkit.swipeassignment
 
 import android.Manifest
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
@@ -37,18 +38,23 @@ import com.samkit.swipeassignment.presentation.addProduct.AddProductScreen
 import com.samkit.swipeassignment.presentation.addProduct.AddProductViewModel
 import com.samkit.swipeassignment.presentation.productList.ProductListScreen
 import com.samkit.swipeassignment.ui.theme.SwipeAssignmentTheme
+import com.samkit.swipeassignment.util.AirplaneModeBroadcastReciever
 import com.samkit.swipeassignment.util.PermissionDialog
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 class MainActivity : ComponentActivity() {
 
-
+    lateinit var airplaneModeBroadcastReciever: AirplaneModeBroadcastReciever
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        airplaneModeBroadcastReciever = AirplaneModeBroadcastReciever()
+        IntentFilter(Intent.ACTION_AIRPLANE_MODE_CHANGED).also {
+            registerReceiver(airplaneModeBroadcastReciever,it)
+        }
         setContent {
             SwipeAssignmentTheme {
                 Surface {
@@ -69,7 +75,6 @@ class MainActivity : ComponentActivity() {
                         ) {
                             AddProductScreen(
                                 onProductAdded = {
-                                    // ✅ Close sheet after adding
                                     scope.launch {
                                         sheetState.hide()
                                     }.invokeOnCompletion {
@@ -95,7 +100,6 @@ class MainActivity : ComponentActivity() {
 }
 @Composable
 fun NotificationPermissionRequester() {
-    // Only proceed if on Android 13 (TIRAMISU) or higher
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
 
     val context = LocalContext.current
@@ -148,7 +152,6 @@ fun NotificationPermissionRequester() {
         )
     }
 
-    // Show the settings dialog when needed
     if (showSettingsDialog) {
         PermissionDialog(
             title = "Permission Required",

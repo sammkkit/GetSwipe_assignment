@@ -83,20 +83,6 @@ class ProductListViewModel(
         }
     }
 
-    fun getProducts() {
-        Log.d(TAG, "[ViewModel] getProducts called.")
-        viewModelScope.launch {
-            _uiState.value = UiState.Loading
-            try {
-                val products = getProductsUseCase()
-                _uiState.value = if (products.isEmpty()) UiState.Empty else UiState.Success(products)
-            } catch (e: Exception) {
-                Log.e(TAG, "[ViewModel] GETTER: Error fetching products.", e)
-                _uiState.value = UiState.Error(e.localizedMessage ?: "Something went wrong")
-            }
-        }
-    }
-
     fun onSearchQueryChanged(query: String) {
         Log.d(TAG, "[ViewModel] Search query changed to: $query")
         _searchQuery.value = query

@@ -8,6 +8,7 @@ import com.samkit.swipeassignment.util.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.io.File
 
 class AddProductViewModel(
     private val addProductUseCase: AddProductUseCase
@@ -37,6 +38,13 @@ class AddProductViewModel(
 
     fun updateImages(images: List<java.io.File>) {
         _formState.value = _formState.value.copy(images = images)
+    }
+    fun changeFirstImage(newImage:File){
+        _formState.value = _formState.value.copy(
+            images = _formState.value.images.mapIndexed {
+                index, file -> if (index == 0) newImage else file
+            }
+        )
     }
 
     fun resetState() {

@@ -2,6 +2,7 @@ package com.samkit.swipeassignment.util
 
 import android.content.Context
 import androidx.work.Constraints
+import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -16,7 +17,7 @@ object SyncScheduler {
         val workRequest = OneTimeWorkRequestBuilder<SyncPendingProductsWorker>()
             .setConstraints(constraints)
             .build()
-
-        WorkManager.getInstance(context).enqueue(workRequest)
+        //FIX : ExistingWorkPolicy.REPLACE -> Ensures only one work stays, Prevents Duplication.
+        WorkManager.getInstance(context).enqueueUniqueWork("Sync Product Work", ExistingWorkPolicy.REPLACE,workRequest)
     }
 }
